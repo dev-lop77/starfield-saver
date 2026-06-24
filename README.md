@@ -4,8 +4,8 @@ A retro-flavoured Windows screensaver. Most of the time it is the classic
 fly-through-space starfield — a calm depth-parallax drift where near stars are
 bright and faster while distant ones are faint and slow. Every so often a
 cinematic *event* drifts past — comets, planets, satellites, original sci-fi
-starships and a shader-drawn wormhole, with supernovae, galaxies and nebulae
-planned.
+starships, and shader-drawn deep-space phenomena (wormholes, supernovae, spiral
+galaxies and translucent nebulae), each randomised in colour and size.
 
 Built in C++17 with SDL2. The scene renders to a low-resolution target that is
 upscaled with nearest-neighbour filtering for crisp, chunky retro pixels. An
@@ -47,11 +47,14 @@ Requires `libsdl2-dev`.
 ```
 make            # -> build/starfield-saver
 make run        # build and open the dev window
+make audition   # cycle through every event back-to-back (eye review)
 ./build/starfield-saver --fullscreen   # preview the real presentation
 ```
 
 Press **ESC** (or move the mouse in fullscreen) to quit. In the dev window,
-press **c** to toggle the CRT effect for a side-by-side comparison.
+press **c** to toggle the CRT effect for a side-by-side comparison. In audition
+mode, press **N** / **Right** to skip to the next event (handy for the longer
+ones); the current event's name is printed to the console.
 
 ### Windows screensaver (.scr), cross-compiled from Linux
 
@@ -72,6 +75,14 @@ The screensaver responds to the standard arguments: `/s` (run fullscreen),
 - **Quick test (no install):** run `StarfieldSaver.scr /s` from a command prompt,
   or right-click the `.scr` in Explorer → **Test**. Move the mouse / press a key
   to exit. (Double-clicking only opens the config box.)
+- **Eye review (audition):** set `audition = 1` in `starfield-saver.ini` (see
+  below), then launch the saver normally (right-click the `.scr` → **Test**, or
+  *Settings → Screen saver → Preview*). It plays every event fullscreen, one at a
+  time, in order — the four shader effects (wormhole, supernova, galaxy, nebula)
+  come last. Press **N** / **Right** to skip to the next, **ESC** to quit. Input
+  doesn't exit in this mode, so you can step through at your own pace. Set
+  `audition = 0` again for normal screensaver behaviour. (No command-line flag is
+  used because a `.scr` can't be passed arguments through the Windows shell.)
 - **Install:** right-click the `.scr` → **Install**, or drop it in
   `C:\Windows\System32` and pick it in *Settings → Lock screen → Screen saver*.
 
@@ -88,6 +99,7 @@ in a non-writable folder, put the file in
 ```ini
 crt = 1        # turn the CRT effect on (default is off)
 downscale = 1  # render = native / this: 1 crisp, 2 softer, 3 chunky pixels
+audition = 0   # 1 = eye-review mode: cycle every event in order (N/Right skip)
 ```
 
 Unknown or missing keys fall back to the built-in defaults.
@@ -114,7 +126,7 @@ Unknown or missing keys fall back to the built-in defaults.
 - [x] Embedded pixel-art sprite system (char-grid + palette, no asset files)
 - [x] Pixel-art events: satellite, planet, starship
 - [x] Reusable GLSL event system (raw-GL shader overlay, software-renderer safe)
-- [x] Rare GLSL event: wormhole (swirling spacetime portal)
-- [ ] Remaining GLSL events: supernova, galaxy, nebula
+- [x] Rare GLSL events: wormhole, supernova, spiral galaxy, translucent nebula
+      (each randomises colour and size per appearance)
 - [ ] Configuration dialog (density, speed, event frequency, CRT intensity)
 ```

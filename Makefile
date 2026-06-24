@@ -33,7 +33,7 @@ WIN_LIBS   := -L$(SDL2_MINGW)/lib -lmingw32 -lSDL2main -lSDL2 \
               -lopengl32 -mwindows -static-libgcc -static-libstdc++
 
 # --------------------------------------------------------------------- rules ---
-.PHONY: all run windows clean sdl2-mingw
+.PHONY: all run audition windows clean sdl2-mingw
 
 all: $(NATIVE_OUT)
 
@@ -43,6 +43,12 @@ $(NATIVE_OUT): $(SRC)
 
 run: $(NATIVE_OUT)
 	./$(NATIVE_OUT)
+
+# Eye review: open the dev window and cycle through every event back-to-back,
+# one at a time. Press N / Right to skip to the next; ESC to quit. Each event's
+# name is printed to the console.
+audition: $(NATIVE_OUT)
+	./$(NATIVE_OUT) --audition
 
 windows: $(SRC)
 	@test -d $(SDL2_MINGW) || { echo "SDL2 mingw libs missing. Run: make sdl2-mingw"; exit 1; }

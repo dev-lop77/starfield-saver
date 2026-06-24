@@ -26,6 +26,12 @@ public:
     bool hasGLEvents() const;
     void renderGL(const GLRenderContext& ctx);
 
+    // Dev "audition" mode: instead of weighted-random spawns, play every event
+    // in the roster once, in order, back-to-back (one on screen at a time), then
+    // loop. The active event's name is printed to the console.
+    void setAudition(bool on);
+    void auditionNext();  // drop the current event and jump to the next now
+
 private:
     // A spawnable event: relative weight + factory.
     struct EventDef {
@@ -34,8 +40,9 @@ private:
         std::function<std::unique_ptr<Scene>()> make;
     };
 
-    void scheduleNext();   // pick the delay until the next event
-    void spawn();          // instantiate a weighted-random event
+    void scheduleNext();    // pick the delay until the next event
+    void spawn();           // instantiate a weighted-random event
+    void spawnAudition();   // instantiate the next roster entry in order
 
     int width_, height_;
     Starfield* starfield_;  // not owned; events may nudge warp etc.
@@ -44,6 +51,9 @@ private:
     std::vector<std::unique_ptr<Scene>> active_;
 
     float timeToNext_ = 0.0f;  // countdown to the next spawn
+
+    bool   audition_ = false;
+    size_t auditionIdx_ = 0;   // next roster entry to play in audition mode
 };
 
 } // namespace ssaver

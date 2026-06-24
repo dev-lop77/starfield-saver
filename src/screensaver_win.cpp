@@ -6,6 +6,11 @@
 //   <prog> /c[:<HWND>]   configuration dialog
 //   <prog>               (no args) — treated as configuration
 //
+// There's no audition command-line flag here on purpose: a .scr can't be passed
+// arguments through the Windows shell. Eye-review mode is enabled from the .ini
+// instead (audition = 1), which the normal /s launch picks up (see settings.h /
+// App::init).
+//
 // The actual rendering is platform-independent (App, in app.cpp); this file is
 // only the Win32 glue.
 

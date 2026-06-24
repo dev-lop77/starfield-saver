@@ -26,12 +26,18 @@ namespace {
 int RunDev(int argc, char** argv) {
     using namespace ssaver;
     AppConfig cfg;
-    // Allow "--fullscreen" on the dev build to eyeball the real presentation.
+    // Dev flags:
+    //   --fullscreen  eyeball the real fullscreen presentation
+    //   --audition    cycle through every event back-to-back (eye review).
+    //                 Press N / Right to skip to the next; the active event's
+    //                 name is printed to the console.
     for (int i = 1; i < argc; ++i) {
         if (std::strcmp(argv[i], "--fullscreen") == 0) {
             cfg.fullscreen = true;
             cfg.hideCursor = true;
             cfg.exitOnInput = true;
+        } else if (std::strcmp(argv[i], "--audition") == 0) {
+            cfg.audition = true;
         }
     }
     App app(cfg);

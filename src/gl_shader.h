@@ -19,6 +19,14 @@ namespace glsl {
 // on the software/headless renderer, so callers can simply skip GL work.
 bool available();
 
+// How the pass blends onto the already-rendered image.
+//   Add   - additive glow (GL_ONE, GL_ONE); fade by scaling the emitted colour.
+//           Best for pure light emission (wormhole, supernova, galaxy).
+//   Alpha - standard transparency (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); the
+//           fragment's alpha controls coverage. Best for translucent gas that
+//           should dim/tint the stars behind it (nebula).
+enum class Blend { Add, Alpha };
+
 // A compiled fullscreen-quad program. Compile once (ensure), then reuse every
 // frame. Designed to live in a function-local static per event type so the
 // shader is compiled a single time for the whole process.
@@ -30,14 +38,14 @@ public:
     bool ensure(const char* fragSrc);
     bool ok() const { return ok_; }
 
-    // Bind the program, set the viewport, and enable additive blending so the
-    // effect glows over whatever is already on screen. Fades are done by scaling
-    // the emitted colour (premultiplied) — see the fragment shaders.
-    void use(int viewportW, int viewportH);
+    // Bind the program, set the viewport, and enable the requested blending so
+    // the effect composites over whatever is already on screen.
+    void use(int viewportW, int viewportH, Blend blend = Blend::Add);
 
     // Set a uniform by name (queried each call; fine for a rare event).
     void setf(const char* name, float v);
     void set2(const char* name, float a, float b);
+    void set3(const char* name, float a, float b, float c);
 
     // Draw the fullscreen quad (clip space -1..1, texcoord 0..1 in vUV).
     void drawQuad();

@@ -50,6 +50,13 @@ bool App::init() {
     // changed on a machine with no build toolchain).
     const Settings settings = loadSettings();
     crtEnabled_ = settings.crt;
+    // Audition can also be turned on from the .ini (handy on the Windows .scr,
+    // which can't take a command-line flag through the shell). When on, force
+    // exit-on-input off so N/Right can step between events; ESC still quits.
+    if (settings.audition) {
+        cfg_.audition = true;
+        cfg_.exitOnInput = false;
+    }
     // Clamp to a sane range: an out-of-range value (e.g. from a garbled .ini)
     // must not overflow the render-target size maths or collapse it to 1x1.
     int downscale =
@@ -148,6 +155,7 @@ bool App::init() {
 
     starfield_ = std::make_unique<Starfield>(lowW_, lowH_);
     scheduler_ = std::make_unique<EventScheduler>(lowW_, lowH_, starfield_.get());
+    if (cfg_.audition) scheduler_->setAudition(true);
 
     // Black out every monitor other than the one we animate on, so a
     // multi-monitor desktop doesn't reveal its wallpaper next to the saver.
@@ -207,6 +215,12 @@ void App::handleEvents() {
                 // 'c' toggles the CRT filter for side-by-side comparison (dev).
                 else if (e.key.keysym.sym == SDLK_c && !cfg_.exitOnInput) {
                     crtEnabled_ = !crtEnabled_;
+                }
+                // Audition: N / Right skips to the next event (dev only).
+                else if ((e.key.keysym.sym == SDLK_n ||
+                          e.key.keysym.sym == SDLK_RIGHT) &&
+                         !cfg_.exitOnInput && cfg_.audition) {
+                    scheduler_->auditionNext();
                 }
                 if (cfg_.exitOnInput) running_ = false;
                 break;

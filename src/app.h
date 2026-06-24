@@ -20,6 +20,7 @@ struct AppConfig {
     bool fullscreen = false;       // true for the real screensaver (/s)
     bool hideCursor = false;       // hide the mouse pointer
     bool exitOnInput = false;      // quit on any mouse/key activity (screensaver)
+    bool audition = false;         // dev: cycle through every event back-to-back
     SDL_Window* existingWindow = nullptr;  // for /p preview: wrap an existing HWND
 };
 

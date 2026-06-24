@@ -1,13 +1,18 @@
 #include "event_scheduler.h"
 
+#include <cstdio>
+
 #include "starfield.h"
 #include "util.h"
 #include "events/comet.h"
+#include "events/galaxy.h"
+#include "events/nebula.h"
 #include "events/planet.h"
 #include "events/satellite.h"
 #include "events/screen_crash.h"
 #include "events/star_burst.h"
 #include "events/starship.h"
+#include "events/supernova.h"
 #include "events/warp_surge.h"
 #include "events/wormhole.h"
 
@@ -33,7 +38,12 @@ EventScheduler::EventScheduler(int width, int height, Starfield* starfield)
                        [this] { return std::make_unique<ScreenCrash>(width_, height_); }});
     roster_.push_back({"wormhole", 0.18f,  // rare GLSL event
                        [this] { return std::make_unique<Wormhole>(width_, height_); }});
-    // TODO: supernova, galaxy, nebula (rare GLSL events)
+    roster_.push_back({"supernova", 0.16f,  // rare GLSL event
+                       [this] { return std::make_unique<Supernova>(width_, height_); }});
+    roster_.push_back({"galaxy", 0.14f,  // rare GLSL event
+                       [this] { return std::make_unique<Galaxy>(width_, height_); }});
+    roster_.push_back({"nebula", 0.14f,  // rare GLSL event
+                       [this] { return std::make_unique<Nebula>(width_, height_); }});
 
     scheduleNext();
 }
@@ -59,11 +69,50 @@ void EventScheduler::spawn() {
     }
 }
 
+void EventScheduler::setAudition(bool on) {
+    audition_ = on;
+    auditionIdx_ = 0;
+    timeToNext_ = 0.4f;  // first event shortly after start
+    if (on) {
+        std::printf("[audition] cycling %zu events; press N / Right to skip.\n",
+                    roster_.size());
+        std::fflush(stdout);
+    }
+}
+
+void EventScheduler::auditionNext() {
+    if (!audition_) return;
+    active_.clear();      // drop whatever's playing
+    timeToNext_ = 0.0f;   // spawn the next one on the coming update
+}
+
+void EventScheduler::spawnAudition() {
+    if (roster_.empty()) return;
+    const EventDef& e = roster_[auditionIdx_ % roster_.size()];
+    std::printf("[audition] %zu/%zu  %s\n",
+                (auditionIdx_ % roster_.size()) + 1, roster_.size(), e.name);
+    std::fflush(stdout);
+    active_.push_back(e.make());
+    ++auditionIdx_;
+}
+
 void EventScheduler::update(float dt) {
-    timeToNext_ -= dt;
-    if (timeToNext_ <= 0.0f) {
-        spawn();
-        scheduleNext();
+    if (audition_) {
+        // One event at a time: only advance once the stage is clear, after a
+        // short gap so each effect is seen in isolation.
+        if (active_.empty()) {
+            timeToNext_ -= dt;
+            if (timeToNext_ <= 0.0f) {
+                spawnAudition();
+                timeToNext_ = 0.6f;  // gap counted down next time the stage clears
+            }
+        }
+    } else {
+        timeToNext_ -= dt;
+        if (timeToNext_ <= 0.0f) {
+            spawn();
+            scheduleNext();
+        }
     }
 
     for (auto& ev : active_) ev->update(dt);

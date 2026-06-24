@@ -35,13 +35,14 @@ void main() {
     vec2 p = vUV - uCenter;
     p.x *= uRes.x / uRes.y;
     float r = length(p);
-    float ang = atan(p.y, p.x);
+    // Slowly rotate the whole portal so it isn't a frozen shape.
+    float ang = atan(p.y, p.x) + uTime * 0.30 * uSpin;
     float q = r / max(uRadius, 0.001);
 
     // Tunnel depth coordinate: small near the rim, large toward the centre, and
     // forever rushing inward (uTime) so it reads as falling in.
     float depth = 1.0 / (q + 0.16);
-    float spiral = ang * 2.0 + uSpin * (depth * 2.2 + uTime * 1.3);
+    float spiral = ang * 2.0 + uSpin * (depth * 2.6 + uTime * 2.1);
 
     // Layered turbulence streaming along the tunnel.
     float turb = noise(vec2(spiral, depth * 3.0 - uTime * 2.2));
@@ -62,11 +63,14 @@ void main() {
     vec3 base   = mix(cool, violet, uHue);
     base        = mix(base, teal, 0.30 * turb);
 
-    vec3 col  = base * walls * (0.45 + 0.95 * swirl);
-    col      += vec3(0.80, 0.90, 1.00) * core * core * 1.4;     // white-hot throat
-    col      += mix(base, vec3(1.0), 0.5) * rim * 1.6;          // bright rim ring
+    vec3 col  = base * walls * (0.40 + 0.85 * swirl);
+    col      += vec3(0.80, 0.90, 1.00) * core * core * 0.80;    // throat (softer)
+    col      += mix(base, vec3(1.0), 0.5) * rim * 1.00;         // rim ring
 
-    col *= reach * uAlpha;
+    // A slow breathing pulse adds life; the 0.6 keeps it translucent so the
+    // starfield shows through rather than blowing out to a solid disc.
+    float pulse = 0.86 + 0.14 * sin(uTime * 2.3);
+    col *= reach * uAlpha * 0.6 * pulse;
     gl_FragColor = vec4(col, 1.0);
 }
 )GLSL";

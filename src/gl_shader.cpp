@@ -41,6 +41,7 @@ typedef void   (APIENTRY *PFN_glUseProgram)(GLuint);
 typedef GLint  (APIENTRY *PFN_glGetUniformLocation)(GLuint, const char*);
 typedef void   (APIENTRY *PFN_glUniform1f)(GLint, GLfloat);
 typedef void   (APIENTRY *PFN_glUniform2f)(GLint, GLfloat, GLfloat);
+typedef void   (APIENTRY *PFN_glUniform3f)(GLint, GLfloat, GLfloat, GLfloat);
 
 namespace {
 PFN_glCreateShader       pCreateShader       = nullptr;
@@ -58,6 +59,7 @@ PFN_glUseProgram         pUseProgram         = nullptr;
 PFN_glGetUniformLocation pGetUniformLocation = nullptr;
 PFN_glUniform1f          pUniform1f          = nullptr;
 PFN_glUniform2f          pUniform2f          = nullptr;
+PFN_glUniform3f          pUniform3f          = nullptr;
 
 enum class LoadState { Unknown, Ok, Failed };
 LoadState g_state = LoadState::Unknown;
@@ -85,6 +87,7 @@ bool loadEntryPoints() {
     ok &= load(pGetUniformLocation, "glGetUniformLocation");
     ok &= load(pUniform1f,          "glUniform1f");
     ok &= load(pUniform2f,          "glUniform2f");
+    ok &= load(pUniform3f,          "glUniform3f");
     return ok;
 }
 
@@ -154,13 +157,15 @@ bool ShaderPass::ensure(const char* fragSrc) {
     return true;
 }
 
-void ShaderPass::use(int viewportW, int viewportH) {
+void ShaderPass::use(int viewportW, int viewportH, Blend blend) {
     if (!ok_) return;
-    // Make sure SDL has flushed its queued GL commands before we take over.
     glViewport(0, 0, viewportW, viewportH);
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
-    glBlendFunc(GL_ONE, GL_ONE);  // additive glow; fade via premultiplied colour
+    if (blend == Blend::Alpha)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // translucent
+    else
+        glBlendFunc(GL_ONE, GL_ONE);                        // additive glow
     pUseProgram(program_);
 }
 
@@ -174,6 +179,12 @@ void ShaderPass::set2(const char* name, float a, float b) {
     if (!ok_) return;
     GLint l = pGetUniformLocation(program_, name);
     if (l >= 0) pUniform2f(l, a, b);
+}
+
+void ShaderPass::set3(const char* name, float a, float b, float c) {
+    if (!ok_) return;
+    GLint l = pGetUniformLocation(program_, name);
+    if (l >= 0) pUniform3f(l, a, b, c);
 }
 
 void ShaderPass::drawQuad() {

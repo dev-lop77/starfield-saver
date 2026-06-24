@@ -14,3 +14,9 @@ crt = 0
 # Internal render resolution = native resolution / downscale.
 #   1 = crispest (default)   2 = softer/chunkier   3 = chunky retro pixels
 downscale = 1
+
+# Audition / eye-review mode. 0 = off (default), 1 = on. When on, the saver
+# cycles through every event in order, one at a time, instead of spawning them
+# at random — handy for reviewing the visuals. Press N / Right to skip to the
+# next event, ESC to quit. Set back to 0 for normal screensaver behaviour.
+audition = 0

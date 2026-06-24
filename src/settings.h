@@ -19,8 +19,9 @@
 namespace ssaver {
 
 struct Settings {
-    bool crt = false;    // CRT post-process on/off (default off; enable with crt=1)
-    int  downscale = 0;  // 0 = use the config.h default; else render = native/this
+    bool crt = false;       // CRT post-process on/off (default off; enable with crt=1)
+    int  downscale = 0;     // 0 = use the config.h default; else render = native/this
+    bool audition = false;  // dev eye-review: cycle every event in order (see App)
 };
 
 namespace detail {
@@ -41,6 +42,8 @@ inline void applyKV(Settings& s, const char* key, const char* val) {
         s.crt = std::strtol(val, nullptr, 10) != 0;
     else if (std::strcmp(key, "downscale") == 0)
         s.downscale = static_cast<int>(std::strtol(val, nullptr, 10));
+    else if (std::strcmp(key, "audition") == 0)
+        s.audition = std::strtol(val, nullptr, 10) != 0;
 }
 
 inline bool parseFile(const char* path, Settings& s) {
