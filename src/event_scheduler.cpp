@@ -18,8 +18,10 @@
 
 namespace ssaver {
 
-EventScheduler::EventScheduler(int width, int height, Starfield* starfield)
-    : width_(width), height_(height), starfield_(starfield) {
+EventScheduler::EventScheduler(int width, int height, Starfield* starfield,
+                               float freqScale)
+    : width_(width), height_(height), starfield_(starfield),
+      freqScale_(freqScale > 0.01f ? freqScale : 1.0f) {
     // The roster. For now only the comet is implemented; the remaining entries
     // are the planned line-up and will be wired in as each event lands.
     roster_.push_back({"comet", 1.0f,
@@ -49,9 +51,11 @@ EventScheduler::EventScheduler(int width, int height, Starfield* starfield)
 }
 
 void EventScheduler::scheduleNext() {
-    // Mostly quiet sky: wait somewhere between a few seconds and ~half a minute
-    // before the next event. Tunable as the roster grows.
-    timeToNext_ = frand(6.0f, 22.0f);
+    // Mostly quiet sky: cinematic events are deliberately sparse, so wait
+    // roughly half a minute to a minute and a half before the next one. The
+    // user's frequency preference scales the wait (higher freqScale_ => shorter
+    // gap => more events). Tunable as the roster grows.
+    timeToNext_ = frand(30.0f, 90.0f) / freqScale_;
 }
 
 void EventScheduler::spawn() {

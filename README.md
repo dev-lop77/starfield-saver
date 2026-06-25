@@ -62,19 +62,27 @@ Requires `g++-mingw-w64-x86-64`. One-time: fetch the SDL2 mingw libraries.
 
 ```
 make sdl2-mingw     # downloads SDL2 devel libs into third_party/ (no sudo)
-make windows        # -> build/StarfieldSaver.scr  (+ build/SDL2.dll)
+make windows        # -> build/StarfieldSaver.scr  (single self-contained file)
 ```
 
-Ship `StarfieldSaver.scr` together with `SDL2.dll` (keep them in the same folder).
+`StarfieldSaver.scr` is a **single self-contained file** — SDL2, OpenGL glue and
+the C++ runtime are all statically linked, so there is no `SDL2.dll` (or any
+other) to ship alongside it. Just distribute the one `.scr`; the user can drop it
+into `C:\Windows\System32` or right-click → **Install** like any screensaver.
 
 ## Installing & testing on Windows
 
 The screensaver responds to the standard arguments: `/s` (run fullscreen),
-`/p <HWND>` (preview pane), `/c` (configuration — currently a placeholder).
+`/p <HWND>` (preview pane), `/c` (configuration dialog).
 
+- **Configure:** right-click the `.scr` → **Configure** (or use the **Settings**
+  button in *Settings → Screen saver*), or just double-click the `.scr`. A small
+  dialog lets you toggle the CRT filter and set pixel chunkiness, star density
+  and event frequency; your choices are saved to the `%APPDATA%` settings file
+  (see below) and apply on the next launch.
 - **Quick test (no install):** run `StarfieldSaver.scr /s` from a command prompt,
   or right-click the `.scr` in Explorer → **Test**. Move the mouse / press a key
-  to exit. (Double-clicking only opens the config box.)
+  to exit. (Double-clicking opens the configuration dialog.)
 - **Eye review (audition):** set `audition = 1` in `starfield-saver.ini` (see
   below), then launch the saver normally (right-click the `.scr` → **Test**, or
   *Settings → Screen saver → Preview*). It plays every event fullscreen, one at a
@@ -91,15 +99,19 @@ other monitors are blacked out.
 
 ## Configuration (no rebuild needed)
 
-Drop a `starfield-saver.ini` next to `StarfieldSaver.scr` (see
+Most settings are editable from the configuration dialog (above). You can also
+hand-edit them: drop a `starfield-saver.ini` next to `StarfieldSaver.scr` (see
 `starfield-saver.ini.example`) and restart the screensaver. If the `.scr` lives
 in a non-writable folder, put the file in
-`%APPDATA%\ssaver\StarfieldSaver\starfield-saver.ini` instead.
+`%APPDATA%\ssaver\StarfieldSaver\starfield-saver.ini` instead (this is also
+where the dialog writes — it takes precedence over a copy beside the `.scr`).
 
 ```ini
-crt = 1        # turn the CRT effect on (default is off)
-downscale = 1  # render = native / this: 1 crisp, 2 softer, 3 chunky pixels
-audition = 0   # 1 = eye-review mode: cycle every event in order (N/Right skip)
+crt = 1            # turn the CRT effect on (default is off)
+downscale = 1      # render = native / this: 1 crisp, 2 softer, 3 chunky pixels
+star_density = 100 # star count, % of default (25..200): 50 sparse, 200 packed
+event_freq = 100   # event spawn rate, % of default (25..300): 50 rare, 200 busy
+audition = 0       # 1 = eye-review mode: cycle every event in order (N/Right skip)
 ```
 
 Unknown or missing keys fall back to the built-in defaults.
@@ -128,5 +140,5 @@ Unknown or missing keys fall back to the built-in defaults.
 - [x] Reusable GLSL event system (raw-GL shader overlay, software-renderer safe)
 - [x] Rare GLSL events: wormhole, supernova, spiral galaxy, translucent nebula
       (each randomises colour and size per appearance)
-- [ ] Configuration dialog (density, speed, event frequency, CRT intensity)
+- [x] Configuration dialog (CRT on/off, chunkiness, star density, event frequency)
 ```

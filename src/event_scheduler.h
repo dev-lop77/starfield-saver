@@ -16,7 +16,10 @@ class Starfield;
 
 class EventScheduler {
 public:
-    EventScheduler(int width, int height, Starfield* starfield);
+    // freqScale multiplies how often events spawn (1.0 = default; >1 = more
+    // frequent). Set from the runtime config.
+    EventScheduler(int width, int height, Starfield* starfield,
+                   float freqScale = 1.0f);
 
     void update(float dt);
     void render(const RenderContext& ctx);
@@ -46,6 +49,7 @@ private:
 
     int width_, height_;
     Starfield* starfield_;  // not owned; events may nudge warp etc.
+    float freqScale_ = 1.0f;  // >1 = events spawn more often (shorter interval)
 
     std::vector<EventDef> roster_;
     std::vector<std::unique_ptr<Scene>> active_;

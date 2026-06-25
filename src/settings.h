@@ -19,9 +19,11 @@
 namespace ssaver {
 
 struct Settings {
-    bool crt = false;       // CRT post-process on/off (default off; enable with crt=1)
-    int  downscale = 0;     // 0 = use the config.h default; else render = native/this
-    bool audition = false;  // dev eye-review: cycle every event in order (see App)
+    bool crt = false;        // CRT post-process on/off (default off; enable with crt=1)
+    int  downscale = 0;      // 0 = use the config.h default; else render = native/this
+    int  starDensity = 100;  // star count, percent of the built-in default (clamped 25..200)
+    int  eventFreq = 100;    // event spawn rate, percent of default (clamped 25..300)
+    bool audition = false;   // dev eye-review: cycle every event in order (see App)
 };
 
 namespace detail {
@@ -42,6 +44,10 @@ inline void applyKV(Settings& s, const char* key, const char* val) {
         s.crt = std::strtol(val, nullptr, 10) != 0;
     else if (std::strcmp(key, "downscale") == 0)
         s.downscale = static_cast<int>(std::strtol(val, nullptr, 10));
+    else if (std::strcmp(key, "star_density") == 0)
+        s.starDensity = static_cast<int>(std::strtol(val, nullptr, 10));
+    else if (std::strcmp(key, "event_freq") == 0)
+        s.eventFreq = static_cast<int>(std::strtol(val, nullptr, 10));
     else if (std::strcmp(key, "audition") == 0)
         s.audition = std::strtol(val, nullptr, 10) != 0;
 }
@@ -72,19 +78,50 @@ inline Settings loadSettings() {
     Settings s;
     const char* kFile = "starfield-saver.ini";
     char path[1024];
-    // 1) next to the executable (drop the .ini beside the .scr)
+    // 1) next to the executable (a preset .ini dropped beside the .scr): used as
+    //    the base layer.
     if (char* base = SDL_GetBasePath()) {
         std::snprintf(path, sizeof(path), "%s%s", base, kFile);
         SDL_free(base);
-        if (detail::parseFile(path, s)) return s;
+        detail::parseFile(path, s);
     }
-    // 2) per-user app-data fallback (always writable)
+    // 2) per-user app-data (always writable — this is where the configuration
+    //    dialog writes). Applied last so the user's dialog choices override any
+    //    preset that sits next to the .scr (which may be in a read-only folder).
     if (char* pref = SDL_GetPrefPath("ssaver", "StarfieldSaver")) {
         std::snprintf(path, sizeof(path), "%s%s", pref, kFile);
         SDL_free(pref);
         detail::parseFile(path, s);
     }
     return s;
+}
+
+// Persist settings to the per-user app-data .ini (the only reliably writable
+// location: the .scr itself usually lives in a read-only system folder). The
+// configuration dialog calls this; loadSettings() reads it back. Returns false
+// if the file couldn't be written.
+inline bool saveSettings(const Settings& s) {
+    char* pref = SDL_GetPrefPath("ssaver", "StarfieldSaver");
+    if (!pref) return false;
+    char path[1024];
+    std::snprintf(path, sizeof(path), "%sstarfield-saver.ini", pref);
+    SDL_free(pref);
+
+    std::FILE* f = std::fopen(path, "w");
+    if (!f) return false;
+    std::fprintf(f,
+                 "# Starfield Saver settings (written by the configuration dialog).\n"
+                 "# You can also edit this by hand; restart the screensaver to apply.\n"
+                 "\n"
+                 "crt = %d           ; CRT filter on/off\n"
+                 "downscale = %d         ; pixel chunkiness: 1 = native (crispest) .. 4\n"
+                 "star_density = %d    ; star count, percent of default (25..200)\n"
+                 "event_freq = %d      ; event spawn rate, percent of default (25..300)\n"
+                 "audition = %d          ; dev: cycle every event in order\n",
+                 s.crt ? 1 : 0, s.downscale, s.starDensity, s.eventFreq,
+                 s.audition ? 1 : 0);
+    std::fclose(f);
+    return true;
 }
 
 }  // namespace ssaver

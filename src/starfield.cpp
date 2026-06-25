@@ -11,11 +11,13 @@ namespace {
 constexpr float kTwoPi = 6.2831853f;
 }
 
-Starfield::Starfield(int width, int height) : width_(width), height_(height) {
+Starfield::Starfield(int width, int height, float densityScale)
+    : width_(width), height_(height) {
     // Scale the count by screen area so density stays consistent at any
-    // resolution (kStarCount is tuned for ~1080p).
+    // resolution (kStarCount is tuned for ~1080p), then by the user's density
+    // preference.
     double areaRatio = (static_cast<double>(width_) * height_) / (1920.0 * 1080.0);
-    int count = static_cast<int>(cfg::kStarCount * areaRatio);
+    int count = static_cast<int>(cfg::kStarCount * areaRatio * densityScale);
     count = std::max(150, std::min(count, 6000));
     stars_.resize(count);
     for (auto& s : stars_) respawn(s);

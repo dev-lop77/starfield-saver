@@ -1,0 +1,46 @@
+// Windows VERSIONINFO resource — populates the .scr's Properties -> Details tab
+// (File version / Product version / Description, etc.). Compiled with
+// x86_64-w64-mingw32-windres and linked into the .scr by `make windows`; it is
+// Windows-only and not part of the native Linux build. This is the one place we
+// use a resource script — a PE version resource cannot be set programmatically
+// at link time, so windres (already in the mingw toolchain) is required. Bump
+// the four VER_* numbers (and the string versions) on each release. Keep the
+// VALUE strings ASCII: windres caps \x escapes at two hex digits, so \x2014 etc.
+// corrupt the string (and an embedded \x00.. null truncates it).
+#include <windows.h>
+
+#define VER_MAJOR 1
+#define VER_MINOR 0
+#define VER_PATCH 0
+#define VER_BUILD 0
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION    VER_MAJOR,VER_MINOR,VER_PATCH,VER_BUILD
+ PRODUCTVERSION VER_MAJOR,VER_MINOR,VER_PATCH,VER_BUILD
+ FILEFLAGSMASK  VS_FFI_FILEFLAGSMASK
+ FILEFLAGS      0x0L
+ FILEOS         VOS_NT_WINDOWS32
+ FILETYPE       VFT_APP
+ FILESUBTYPE    VFT2_UNKNOWN
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        // 0409 = US English, 04b0 = Unicode (1200) — must match the
+        // Translation value in VarFileInfo below.
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName",      "LoP"
+            VALUE "FileDescription",  "Starfield Saver - retro space screensaver"
+            VALUE "FileVersion",      "1.0.0.0"
+            VALUE "InternalName",     "StarfieldSaver"
+            VALUE "OriginalFilename", "StarfieldSaver.scr"
+            VALUE "ProductName",      "Starfield Saver"
+            VALUE "ProductVersion",   "1.0.0"
+            VALUE "LegalCopyright",   "(c) 2026 LoP"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END

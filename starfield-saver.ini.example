@@ -15,6 +15,19 @@ crt = 0
 #   1 = crispest (default)   2 = softer/chunkier   3 = chunky retro pixels
 downscale = 1
 
+# Star density, as a percentage of the built-in default (clamped 25..200).
+#   100 = default, 50 = sparse, 200 = packed sky.
+star_density = 100
+
+# Event frequency, as a percentage of the default spawn rate (clamped 25..300).
+#   100 = default, 50 = rarer cinematic events, 200 = twice as often.
+event_freq = 100
+
+# NOTE: crt / downscale / star_density / event_freq are also editable from the
+# screensaver's configuration dialog (right-click the .scr -> Configure, or the
+# Settings button in the Windows screensaver picker), which writes the %APPDATA%
+# copy above.
+
 # Audition / eye-review mode. 0 = off (default), 1 = on. When on, the saver
 # cycles through every event in order, one at a time, instead of spawning them
 # at random — handy for reviewing the visuals. Press N / Right to skip to the

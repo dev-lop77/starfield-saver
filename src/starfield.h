@@ -13,7 +13,9 @@ namespace ssaver {
 
 class Starfield : public Scene {
 public:
-    Starfield(int width, int height);
+    // densityScale multiplies the built-in star count (1.0 = default); set from
+    // the runtime config so the user can thin out or pack the sky.
+    Starfield(int width, int height, float densityScale = 1.0f);
 
     void update(float dt) override;
     void render(const RenderContext& ctx) override;

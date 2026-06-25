@@ -63,6 +63,13 @@ bool App::init() {
         settings.downscale > 0 ? settings.downscale : cfg::kRenderDownscale;
     downscale = std::max(1, std::min(downscale, 16));
 
+    // Star density and event frequency are stored as a percentage of the
+    // built-in defaults; clamp to sane ranges and convert to a multiplier.
+    const float densityScale =
+        std::max(25, std::min(settings.starDensity, 200)) / 100.0f;
+    const float freqScale =
+        std::max(25, std::min(settings.eventFreq, 300)) / 100.0f;
+
     if (cfg_.existingWindow) {
         window_ = cfg_.existingWindow;
     } else if (cfg_.fullscreen) {
@@ -153,8 +160,9 @@ bool App::init() {
         }
     }
 
-    starfield_ = std::make_unique<Starfield>(lowW_, lowH_);
-    scheduler_ = std::make_unique<EventScheduler>(lowW_, lowH_, starfield_.get());
+    starfield_ = std::make_unique<Starfield>(lowW_, lowH_, densityScale);
+    scheduler_ = std::make_unique<EventScheduler>(lowW_, lowH_, starfield_.get(),
+                                                  freqScale);
     if (cfg_.audition) scheduler_->setAudition(true);
 
     // Black out every monitor other than the one we animate on, so a
