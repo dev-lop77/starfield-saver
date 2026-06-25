@@ -9,6 +9,14 @@
 // corrupt the string (and an embedded \x00.. null truncates it).
 #include <windows.h>
 
+// Application icon shown by Explorer and the Screen Saver settings dialog. The
+// shell uses the icon resource with the LOWEST id, so this is id 1. The path is
+// resolved via windres's --include-dir (see the Makefile `windows` rule, which
+// adds `-I assets`); drop the .ico at assets/StarfieldSaver.ico. Must be true
+// .ico (ideally multi-size: 16/32/48/256). If the file is absent the windres
+// step fails — remove this line to build without an icon.
+1 ICON "StarfieldSaver.ico"
+
 #define VER_MAJOR 1
 #define VER_MINOR 0
 #define VER_PATCH 0

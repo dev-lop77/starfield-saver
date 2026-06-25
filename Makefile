@@ -70,7 +70,7 @@ audition: $(NATIVE_OUT)
 windows: $(SRC) $(WIN_RES_SRC)
 	@test -d $(SDL2_MINGW) || { echo "SDL2 mingw libs missing. Run: make sdl2-mingw"; exit 1; }
 	@mkdir -p build
-	$(WIN_RC) $(WIN_RES_SRC) -O coff -o $(WIN_RES_OBJ)
+	$(WIN_RC) -I assets $(WIN_RES_SRC) -O coff -o $(WIN_RES_OBJ)
 	$(WIN_CXX) $(WIN_FLAGS) $(SRC) $(WIN_RES_OBJ) -o $(WIN_OUT) $(WIN_LIBS)
 	@rm -f build/SDL2.dll
 	@echo "Built $(WIN_OUT) — single self-contained file, ship it ALONE."
